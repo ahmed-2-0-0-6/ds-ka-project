@@ -1,21 +1,21 @@
 import streamlit as st
 import mysql.connector
 
+# --- Connect to DB using secrets from secrets.toml or Streamlit Cloud ---
+def connect_db():
+    return mysql.connector.connect(
+        host=st.secrets["database"]["DB_HOST"],
+        user=st.secrets["database"]["DB_USER"],
+        password=st.secrets["database"]["DB_PASSWORD"],
+        database=st.secrets["database"]["DB_NAME"]
+    )
+
 # --- Streamlit UI ---
 st.title("📚 Add New Book")
 
 title = st.text_input("Book Title")
 author = st.text_input("Author")
 year = st.text_input("Year Published")
-
-# Connect to database
-def connect_db():
-    return mysql.connector.connect(
-        host=st.secrets["DB_HOST"],
-        user=st.secrets["DB_USER"],
-        password=st.secrets["DB_PASSWORD"],
-        database=st.secrets["DB_NAME"]
-    )
 
 if st.button("➕ Add Book"):
     if not title or not author or not year:
@@ -24,7 +24,6 @@ if st.button("➕ Add Book"):
         try:
             conn = connect_db()
             cursor = conn.cursor()
-
             sql = "INSERT INTO Books (title, author, year_published) VALUES (%s, %s, %s)"
             values = (title, author, int(year))
             cursor.execute(sql, values)
@@ -32,6 +31,7 @@ if st.button("➕ Add Book"):
 
             st.success("✅ Book added successfully!")
 
+            # Clean-up
             cursor.close()
             conn.close()
 
